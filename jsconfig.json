@@ -1,0 +1,20 @@
+// {
+//   "compilerOptions": {
+//     "paths": {
+//       "@/components/*": ["./components/Map/*"],
+//       "@/app/*": ["./app/*"],
+//       "@/lib/*": ["lib/*"]
+//     }
+//   }
+// }
+
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./*"],
+      "@components/*": ["./components/*"],
+      "@/app/*": ["./app/*"],
+      "@/lib/*": ["./lib/*"]
+    }
+  }
+}
