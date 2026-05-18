@@ -16,7 +16,7 @@ export async function GET() {
 // Handle POST requests
 export async function POST(request) {
   "use client"
-  console.log("i am inside  post function")
+  // console.log("i am inside  post function")
   const body = await request.json()
   //const [response] = await pool.query("INSERT INTO FRIENDS values")
   const [result] = await pool.execute(
@@ -30,14 +30,14 @@ export async function POST(request) {
       id: result.insertId,
       data: body.name,
     },
-    console.log(body.name),
+    // console.log(body.name),
   )
 }
 
 // Handle POST requests
 export async function PUT(request) {
   "use client"
-  console.log("i am inside  post function")
+  // console.log("i am inside  post function")
   const body = await request.json()
   //const [response] = await pool.query("INSERT INTO FRIENDS values")
   const [result] = await pool.execute(
@@ -51,6 +51,6 @@ export async function PUT(request) {
       id: result.insertId,
       data: body.name,
     },
-    console.log(body.name),
+    // console.log(body.name),
   )
 }

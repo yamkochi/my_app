@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation"
 export default function EditEmployeeForm({ employee, roles }) {
   // Pass existing employee data to defaultValues for pre-filling
   const router = useRouter()
-  console.log(employee)
+  // console.log(employee)
   const vip = employee.vip
   const admin = employee.admin
   const {
@@ -33,8 +33,8 @@ export default function EditEmployeeForm({ employee, roles }) {
 
   const onSubmit = async (data) => {
     //e.preventDefault()
-    console.log("in side emp update form")
-    console.log(data)
+    // console.log("in side emp update form")
+    // console.log(data)
     const result = await updateEmployeeAction(data)
     if (result.success) {
       alert("Employee updated successfully!")

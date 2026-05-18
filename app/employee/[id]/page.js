@@ -25,7 +25,7 @@ export default function EditEmployee({ params: paramsPromise }) {
   })
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/employees/${id}`)
+    fetch(`/api/employees/${id}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.error) {

@@ -22,8 +22,8 @@ const ViewEmployeeForm = ({ empId }) => {
   // Fetch record on mount or when empId changes
   useEffect(() => {
     if (!empId) return
-    console.log(empId)
-    console.log("in view emp form")
+    //  console.log(empId)
+    //  console.log("in view emp form")
     async function loadData() {
       setLoading(true)
       const res = await getEmployeeById(empId)

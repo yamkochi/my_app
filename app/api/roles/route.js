@@ -5,7 +5,7 @@ import { pool } from "@/lib/db"
 export async function GET() {
   try {
     const [response] = await pool.query("SELECT id,role_name FROM  role ")
-    console.log(response)
+    // console.log(response)
     return NextResponse.json(response)
   } catch (error) {
     return NextResponse.json(

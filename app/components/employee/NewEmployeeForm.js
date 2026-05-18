@@ -28,7 +28,7 @@ export default function NewEmployeeForm() {
 
   //hkjhjhkhkhh
   useEffect(() => {
-    fetch("http://localhost:3000/api/employees", {
+    fetch("/api/employees", {
       method: "GET",
     })
       .then((res) => res.json())
@@ -58,7 +58,7 @@ export default function NewEmployeeForm() {
     const data = new FormData()
     Object.keys(formData).forEach((key) => data.append(key, formData[key]))
 
-    const res = await fetch("http://localhost:3000/api/employees", {
+    const res = await fetch("/api/employees", {
       method: "POST",
       body: data,
     })

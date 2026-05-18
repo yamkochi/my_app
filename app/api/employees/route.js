@@ -6,11 +6,11 @@ import path from "path"
 
 // Fetch roles for the dropdown
 export async function GET() {
-  console.log("anand here api/empxxx")
+  // console.log("anand here api/empxxx")
   try {
-    console.log("anand here api/emp")
+    //  console.log("anand here api/emp")
     const [roles] = await pool.query("SELECT id, role_name FROM role")
-    console.log(roles)
+    //  console.log(roles)
     return NextResponse.json(roles)
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })

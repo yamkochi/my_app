@@ -55,7 +55,9 @@ export default function ProjectMap({ projects }) {
           <p className="text-xs text-slate-500">Showing active projects only</p>
         </div>
         <Link
-          href="http://localhost:3000/"
+          // href="http://localhost:3000/"
+
+          href="/"
           className="ml-6 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors duration-200 flex items-center"
         >
           Exit Map

@@ -40,7 +40,7 @@ export default function ViewEmployee({ params: paramsPromise }) {
     if (!confirmed) return
 
     try {
-      const res = await fetch(`http://localhost:3000/api/employees/${id}`, {
+      const res = await fetch(`${process.env.API_URL}/api/employees/${id}`, {
         method: "DELETE",
       })
       if (res.ok) {

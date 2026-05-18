@@ -28,7 +28,7 @@ const AddEmployeeForm = () => {
     //     method: "GET",
     //   })
 
-    fetch("http://localhost:3000/api/roles", {
+    fetch(`/api/roles`, {
       method: "GET",
     }) // Replace with your actual API endpoint
       .then((res) => res.json())
@@ -60,7 +60,7 @@ const AddEmployeeForm = () => {
       const salt = bcrypt.genSaltSync(10)
       data.password = bcrypt.hashSync(data.password, salt)
 
-      const response = await fetch("http://localhost:3000/api/employees", {
+      const response = await fetch(`/api/employees`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

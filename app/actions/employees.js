@@ -12,7 +12,7 @@ export async function saveMarker(lat, lng) {
     )
     return { success: true, id: result.insertId }
   } catch (error) {
-    console.error("Database error:", error)
+    //console.error("Database error:", error)
     return { success: false }
   }
 }
@@ -44,8 +44,9 @@ export async function getMarkers() {
 export async function createuser(formdata) {
   "use server"
   const name = formdata.get("name")
-  console.log(name)
-  const res = await fetch("http://localhost:3000/api/empdata", {
+  //console.log(name)
+  // const res = await fetch(`${process.env.API_URL}/api/empdata`, {
+  const res = await fetch(`/api/empdata`, {
     method: "POST",
     // body: name,
     body: JSON.stringify({ name }),
@@ -182,7 +183,7 @@ export async function addEmployeeAction(data) {
 
 // 1. Fetch employee joined with role data by ID
 export async function getEmployeeById(empId) {
-  console.log("in getempbyid")
+  //console.log("in getempbyid")
   try {
     const [rows] = await pool.execute(
       `SELECT e.*, r.role_name 

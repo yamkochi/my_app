@@ -22,7 +22,7 @@ export default function MapPage() {
   useEffect(() => {
     async function fetchProjectPoints() {
       try {
-        const response = await fetch("http://localhost:3000/api/projects/map")
+        const response = await fetch(`/api/projects/map`)
         if (!response.ok) throw new Error("Network error")
         const data = await response.json()
         setProjects(data)

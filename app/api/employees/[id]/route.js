@@ -8,8 +8,8 @@ import path from "path"
 export async function GET(request, { params }) {
   try {
     const { id } = await params
-    console.log("anand in api emp id")
-    console.log(id)
+    //("anand in api emp id")
+    // console.log(id)
     // Fetch employee data
     const [employees] = await pool.query(
       "SELECT * FROM employee WHERE id = ?",
@@ -111,7 +111,7 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   const { id } = await params
-  console.log(`anand in emp del route..., ${id}`)
+  // console.log(`anand in emp del route..., ${id}`)
   const connection = await pool.getConnection()
 
   try {
