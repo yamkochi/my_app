@@ -57,7 +57,7 @@ export default function MasterDetailForm() {
   // Fetch initial master project data and employee configuration list
   const fetchInitialData = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/projects")
+      const res = await fetch("/api/projects")
       const data = await res.json()
       if (data.error) throw new Error(data.error)
       setProjects(data.projects || [])
