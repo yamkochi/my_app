@@ -1,10 +1,10 @@
-import AddEmployeeForm from "../components/AddEmployeeForm"
+import AddNewEmployee from "../components/employee/NewEmployeeForm"
 
 export default function addEmployee() {
   return (
     <div>
       <h1>Add employee</h1>
-      <AddEmployeeForm />
+      <AddNewEmployee />
     </div>
   )
 }

@@ -1,5 +1,6 @@
 "use client"
-
+import VipToggle from "@/app/components/VipToggle"
+import AdminToggle from "@/app/components/AdminToggle"
 import { useForm } from "react-hook-form"
 import { updateEmployeeAction } from "@/app/actions/employees"
 import { redirect } from "next/navigation"
@@ -8,7 +9,9 @@ import { useRouter } from "next/navigation"
 export default function EditEmployeeForm({ employee, roles }) {
   // Pass existing employee data to defaultValues for pre-filling
   const router = useRouter()
-
+  console.log(employee)
+  const vip = employee.vip
+  const admin = employee.admin
   const {
     register,
     handleSubmit,
@@ -16,6 +19,8 @@ export default function EditEmployeeForm({ employee, roles }) {
   } = useForm({
     defaultValues: {
       ...employee,
+      // vip: employee?.vip || 0,
+      // admin: employee?.admin || 0,
       // Format dates to YYYY-MM-DD for the HTML date input
       date_joined: employee.date_joined
         ? new Date(employee.date_joined).toISOString().split("T")[0]
@@ -76,6 +81,7 @@ export default function EditEmployeeForm({ employee, roles }) {
           />
         </section>
       </div>
+
       <div className="grid grid-cols-2 gap-4">
         <section>
           <label className="block text-sm font-semibold">Role</label>
@@ -90,6 +96,7 @@ export default function EditEmployeeForm({ employee, roles }) {
             ))}
           </select>
         </section>
+
         <section>
           <label className="block text-sm font-semibold">
             Role Description
@@ -100,6 +107,21 @@ export default function EditEmployeeForm({ employee, roles }) {
           />
         </section>
       </div>
+
+      {/* comment */}
+
+      <div className="grid grid-cols-2 gap-4">
+        <section>
+          <VipToggle vip={vip} />
+        </section>
+
+        <section>
+          <AdminToggle admin={admin} />
+        </section>
+      </div>
+
+      {/* comment */}
+
       <section>
         <label className="block text-sm font-semibold">Photo URL</label>
         <input

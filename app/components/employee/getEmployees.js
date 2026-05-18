@@ -1,7 +1,7 @@
 // components/EmployeeList.js
 import Link from "next/link"
 import { pool } from "@/lib/db"
-
+// test
 async function getEmployees() {
   try {
     // JOIN query to get the role name via the foreign key
@@ -68,7 +68,7 @@ export default async function EmployeeList() {
 
                 <td className="p-4 text-center">
                   <Link
-                    href={`/viewdelete/${person.id}`}
+                    href={`/employee/viewdelete/${person.id}`}
                     className="text-indigo-600 hover:underline font-semibold"
                   >
                     Delete

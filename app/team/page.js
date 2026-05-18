@@ -1,4 +1,4 @@
-import CoreEmployees from "../components/CoreEmployees"
+import CoreEmployees from "../components/employee/CoreEmployees"
 export default function employeelist() {
   return (
     <div>

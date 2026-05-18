@@ -1,14 +1,10 @@
 "use client"
-import { useState, useEffect, use } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
-export default function EditEmployee({ params: paramsPromise }) {
-  const params = use(paramsPromise)
+export default function NewEmployeeForm() {
   const router = useRouter()
-  const { id } = params
-
   const [roles, setRoles] = useState([])
-  const [loading, setLoading] = useState(true)
   const [preview, setPreview] = useState(null)
   const [formData, setFormData] = useState({
     name: "",
@@ -23,41 +19,22 @@ export default function EditEmployee({ params: paramsPromise }) {
     lng: "",
     logtime: "",
   })
+  //"http://localhost:3000/api/roles
+  //  fetch("http://localhost:3000/api/roles", {
+  //       method: "GET",
+  //     }) // Replace with your actual API endpoint
+  //       .then((res) => res.json())
+  //       .then((data) => setRoles(data))
 
+  //hkjhjhkhkhh
   useEffect(() => {
-    fetch(`http://localhost:3000/api/employees/${id}`)
+    fetch("http://localhost:3000/api/employees", {
+      method: "GET",
+    })
       .then((res) => res.json())
-      .then((data) => {
-        if (data.error) {
-          alert(data.error)
-          router.push("/employee")
-          return
-        }
-
-        setRoles(data.roles)
-
-        // Format ISO timestamp dates safely into input value patterns (YYYY-MM-DD)
-        const formattedDate = data.employee.date_joined
-          ? data.employee.date_joined.split("T")[0]
-          : ""
-        const formattedLogtime = data.employee.logtime
-          ? data.employee.logtime.slice(0, 16)
-          : ""
-
-        setFormData({
-          ...data.employee,
-          date_joined: formattedDate,
-          logtime: formattedLogtime,
-          password: "", // Keep empty unless updating
-        })
-
-        if (data.employee.photo_url) {
-          setPreview(data.employee.photo_url)
-        }
-        setLoading(false)
-      })
-      .catch((err) => console.error("Error fetching record:", err))
-  }, [id, router])
+      .then((data) => setRoles(data))
+      .catch((err) => console.error("Failed loading roles", err))
+  }, [])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -79,34 +56,21 @@ export default function EditEmployee({ params: paramsPromise }) {
   const handleSubmit = async (e) => {
     e.preventDefault()
     const data = new FormData()
-    Object.keys(formData).forEach((key) => {
-      if (formData[key] !== null && formData[key] !== undefined) {
-        data.append(key, formData[key])
-      }
-    })
+    Object.keys(formData).forEach((key) => data.append(key, formData[key]))
 
-    const res = await fetch(`/api/employees/${id}`, {
-      method: "PUT",
+    const res = await fetch("http://localhost:3000/api/employees", {
+      method: "POST",
       body: data,
     })
-    if (res.ok) {
-      router.push("/employee")
-    } else {
-      alert("Failed to update employee record")
-    }
+    if (res.ok) router.push("/employee")
+    else alert("Failed to save record")
   }
-
-  if (loading)
-    return <div className="text-center mt-10">Loading Employee Data...</div>
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg mt-10">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">
-          Edit Employee (ID: {id})
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-800">Add New Employee</h2>
         <button
-          type="button"
           onClick={() => router.push("/employee")}
           className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition"
         >
@@ -123,7 +87,6 @@ export default function EditEmployee({ params: paramsPromise }) {
             <input
               type="text"
               name="name"
-              value={formData.name}
               required
               onChange={handleChange}
               className="mt-1 block w-full p-2 border rounded border-gray-300"
@@ -136,7 +99,6 @@ export default function EditEmployee({ params: paramsPromise }) {
             <input
               type="email"
               name="email"
-              value={formData.email}
               required
               onChange={handleChange}
               className="mt-1 block w-full p-2 border rounded border-gray-300"
@@ -151,7 +113,6 @@ export default function EditEmployee({ params: paramsPromise }) {
             </label>
             <select
               name="role_id"
-              value={formData.role_id}
               required
               onChange={handleChange}
               className="mt-1 block w-full p-2 border rounded border-gray-300 bg-white"
@@ -171,7 +132,6 @@ export default function EditEmployee({ params: paramsPromise }) {
             <input
               type="date"
               name="date_joined"
-              value={formData.date_joined}
               required
               onChange={handleChange}
               className="mt-1 block w-full p-2 border rounded border-gray-300"
@@ -181,15 +141,14 @@ export default function EditEmployee({ params: paramsPromise }) {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Password (Leave blank to keep unchanged)
+            Password
           </label>
           <input
             type="password"
             name="password"
-            value={formData.password}
+            required
             onChange={handleChange}
             className="mt-1 block w-full p-2 border rounded border-gray-300"
-            placeholder="••••••••"
           />
         </div>
 
@@ -199,7 +158,6 @@ export default function EditEmployee({ params: paramsPromise }) {
           </label>
           <textarea
             name="role_desc"
-            value={formData.role_desc || ""}
             onChange={handleChange}
             className="mt-1 block w-full p-2 border rounded border-gray-300"
             rows="2"
@@ -215,7 +173,6 @@ export default function EditEmployee({ params: paramsPromise }) {
               type="number"
               step="any"
               name="lat"
-              value={formData.lat || ""}
               onChange={handleChange}
               className="mt-1 block w-full p-2 border rounded border-gray-300"
             />
@@ -228,7 +185,6 @@ export default function EditEmployee({ params: paramsPromise }) {
               type="number"
               step="any"
               name="lng"
-              value={formData.lng || ""}
               onChange={handleChange}
               className="mt-1 block w-full p-2 border rounded border-gray-300"
             />
@@ -240,14 +196,13 @@ export default function EditEmployee({ params: paramsPromise }) {
             <input
               type="datetime-local"
               name="logtime"
-              value={formData.logtime || ""}
               onChange={handleChange}
               className="mt-1 block w-full p-2 border rounded border-gray-300"
             />
           </div>
         </div>
 
-        {/* Binary Toggles */}
+        {/* Binary Switches */}
         <div className="flex space-x-8 py-2">
           <div className="flex items-center space-x-3">
             <span className="text-sm font-medium text-gray-700">
@@ -286,14 +241,14 @@ export default function EditEmployee({ params: paramsPromise }) {
           </div>
         </div>
 
-        {/* Photo Upload with existing file display fallback */}
+        {/* Photo Upload Section */}
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Update Photo
+            Employee Photo
           </label>
           <div className="mt-2 flex items-center space-x-4">
             <label className="cursor-pointer bg-white px-4 py-2 border border-gray-300 rounded shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50">
-              Change Image
+              Select Profile Image
               <input
                 type="file"
                 accept="image/*"
@@ -304,7 +259,7 @@ export default function EditEmployee({ params: paramsPromise }) {
             {preview && (
               <img
                 src={preview}
-                alt="Current Preview"
+                alt="Preview"
                 className="h-16 w-16 object-cover rounded-full border"
               />
             )}
@@ -313,9 +268,9 @@ export default function EditEmployee({ params: paramsPromise }) {
 
         <button
           type="submit"
-          className="w-full py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded shadow transition"
+          className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded shadow transition"
         >
-          Update Record
+          Save Employee Record
         </button>
       </form>
     </div>

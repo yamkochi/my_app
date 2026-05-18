@@ -3,7 +3,7 @@ import { Inter } from "next/font/google"
 // Importing global styles for the application
 import "./globals.css"
 // Importing the Navbar component
-import Navbar from "./components/Navbar"
+import Navbar from "@/app/components/NavBarNew"
 
 // If loading a variable font, you don't need to specify the font weight
 const inter = Inter({

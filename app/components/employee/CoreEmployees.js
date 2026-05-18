@@ -7,8 +7,9 @@ async function getEmployees() {
     // JOIN query to get the role name via the foreign key
     const [rows] = await pool.query(`
       SELECT e.id, e.name, e.email, e.photo_url, r.role_name 
-      FROM employee e
+      FROM employee e 
       JOIN role r ON e.role_id = r.id
+      where e.vip= true
     `)
     return rows
   } catch (error) {

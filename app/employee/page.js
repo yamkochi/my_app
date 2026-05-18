@@ -1,4 +1,4 @@
-import EmployeeList from "../components/getEmployees"
+import EmployeeList from "../components/employee/getEmployees"
 export default function employeelist() {
   return (
     <div>
