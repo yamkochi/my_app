@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic"
 // Importing the 'Inter' font from Google Fonts
 import { Inter } from "next/font/google"
 // Importing global styles for the application

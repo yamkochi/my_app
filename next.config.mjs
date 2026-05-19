@@ -10,6 +10,10 @@ const nextConfig = {
   reactStrictMode: true,
   // Ensures Leaflet assets don't throw unexpected token errors during compilation
   transpilePackages: ["react-leaflet", "leaflet"],
+  experimental: {
+    workerThreads: false,
+    cpus: 1,
+  },
 }
 
 export default nextConfig
