@@ -4,11 +4,11 @@ async function getEmployees() {
   try {
     // 1. Create the connection configuration
     const connection = await mysql.createConnection({
-      host: process.env.DB_HOST || "localhost",
-      user: process.env.DB_USER || "root",
-      password: process.env.DB_PASSWORD || "Anand#1960",
-      database: process.env.DB_NAME || "bridges",
-      port: parseInt(process.env.DB_PORT || "3306"),
+      host: process.env.MYSQL_HOST,
+      user: process.env.MYSQL_USER,
+      password: process.env.MYSQL_PASSWORD,
+      database: process.env.MYSQL_DATABASE,
+      port: parseInt(process.env.MYSQL_PORT),
     })
 
     // 2. Fetch the first 10 rows from the employee table
