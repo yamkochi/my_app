@@ -1,8 +1,8 @@
 import EmployeeList from "../components/employee/getEmployees"
-export default function employeelist() {
+export default function Employeelist() {
   return (
     <div>
-      <h1>employee list</h1>
+      <h1>Employee list</h1>
       <EmployeeList />
     </div>
   )
