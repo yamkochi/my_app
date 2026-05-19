@@ -8,8 +8,8 @@ const navigationLinks = [
   {
     name: "Dashboard",
     items: [
-      { name: "Overview", href: "#" },
-      { name: "Analytics", href: "#" },
+      { name: "Test Connection", href: "/emp" },
+
       { name: "Reports", href: "#" },
     ],
   },
