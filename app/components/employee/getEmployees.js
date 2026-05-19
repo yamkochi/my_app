@@ -1,6 +1,7 @@
 // components/EmployeeList.js
 import Link from "next/link"
 import { pool } from "@/lib/db"
+export const dynamic = "force-dynamic"
 // test
 async function getEmployees() {
   try {
