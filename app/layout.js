@@ -23,8 +23,17 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className={inter.className} suppressHydrationWarning={true}>
       {""}
-      {/* Applying the Inter font to the entire page */}
-      <body>
+      {/* Applying the Inter font and fixed background image to the entire page */}
+      <body
+        style={{
+          backgroundImage: "url('/misc/myimage.png')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          backgroundAttachment: "fixed", // Keeps the image in the background while content scrolls
+          minHeight: "100vh",
+        }}
+      >
         <Navbar /> {/* Displaying the Navbar component */}
         {children} {/* Rendering the content of the current page */}
       </body>
