@@ -1,5 +1,5 @@
 // app/api/auth/profile/upload/route.js
-import pool from "@/lib/db"
+import { pool } from "@/lib/db"
 import { getSession, createSession } from "../../session"
 import { writeFile, mkdir } from "fs/promises"
 import path from "path"
