@@ -48,12 +48,12 @@ export async function POST(request) {
 
     // 1. FIXED: Added "secure: true" for Hostinger's standard Port 465 SSL connection
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT),
-      secure: true,
+      host: process.env.SMTP_HOST || "smtp.hostinger.com",
+      port: parseInt(process.env.SMTP_PORT || "465", 10),
+      secure: process.env.SMTP_SECURE === "true",
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: process.env.SMTP_USER || "admin@yamkochi.com",
+        pass: process.env.SMTP_PASS || "Guindy#1439",
       },
     })
 
