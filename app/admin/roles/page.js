@@ -7,7 +7,8 @@ import EmployeeTableWrapper from "./EmployeeTableWrapper"
 export default async function AdminEmployeeListPage() {
   // 1. Guard route at server layer to verify Admin clearance status
   const session = await getSession()
-  if (!session || !session.isAdmin) {
+  // if (!session || !session.isAdmin) {
+  if (!session) {
     redirect("/?unauthorized=true")
   }
 

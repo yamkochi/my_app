@@ -1,7 +1,9 @@
 // app/layout.js
+import "./globals.css" // 1. Run Tailwind v4 foundations first
+import "leaflet/dist/leaflet.css" // 2. Ov
+
 import { getSession } from "./api/auth/session" // ✅ Named import (with curly braces)
 import Navbar from "../app/components/NavBar" // ✅ Default import (NO curly braces)
-import "./globals.css"
 
 export const metadata = {
   title: "Enterprise System",

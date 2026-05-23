@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@utility leaflet-map {
+  @import "leaflet/dist/leaflet.css";
+}
 
 :root {
   --background: #ffffff;

@@ -1,15 +1,9 @@
 // app/api/auth/forgot-password/route.js
 import { pool } from "@/lib/db"
-import bcrypt from "bcryptjs"
 import nodemailer from "nodemailer"
 
-function generateRandomPassword() {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-  let result = ""
-  for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return result
+function generateVerificationCode() {
+  return Math.floor(1000 + Math.random() * 9000).toString() // Generates 4-digit string
 }
 
 export async function POST(request) {
@@ -28,25 +22,24 @@ export async function POST(request) {
       [email.trim()],
     )
 
+    // Security practice: don't reveal if email exists or not
     if (rows.length === 0) {
       return Response.json({
         success: true,
-        message: "If the account exists, a new password has been sent.",
+        message: "If the account exists, a verification code has been sent.",
       })
     }
 
     const employee = rows[0]
-    const temporaryPassword = generateRandomPassword()
+    const verificationCode = generateVerificationCode()
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000) // Code valid for 15 minutes
 
-    const salt = await bcrypt.genSalt(10)
-    const hashedTemporaryPassword = await bcrypt.hash(temporaryPassword, salt)
+    // Save the code and expiry time to the database
+    await pool.execute(
+      "UPDATE employee SET reset_code = ?, reset_expires_at = ? WHERE id = ?",
+      [verificationCode, expiresAt, employee.id],
+    )
 
-    await pool.execute("UPDATE employee SET password = ? WHERE id = ?", [
-      hashedTemporaryPassword,
-      employee.id,
-    ])
-
-    // 1. FIXED: Added "secure: true" for Hostinger's standard Port 465 SSL connection
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || "smtp.hostinger.com",
       port: parseInt(process.env.SMTP_PORT || "465", 10),
@@ -57,28 +50,26 @@ export async function POST(request) {
       },
     })
 
-    // 2. FIXED: Dynamically bound the "from" address to your authorized matching domain user variable
     await transporter.sendMail({
       from: `"Enterprise Security" <${process.env.SMTP_USER}>`,
       to: email.trim(),
-      subject: "Temporary Password Reset Notification",
+      subject: "Your Password Reset Verification Code",
       html: `
         <div style="font-family: sans-serif; padding: 20px; color: #333;">
-          <h2 style="color: #4f46e5;">Password Reset Requested</h2>
+          <h2 style="color: #4f46e5;">Verification Code</h2>
           <p>Hello ${employee.name},</p>
-          <p>Your account login password has been reset. Please use the temporary 6-letter security credential listed below to log back into the workspace dashboard:</p>
-          <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; font-size: 24px; font-weight: bold; letter-spacing: 2px; display: inline-block; color: #111827; margin: 15px 0;">
-            ${temporaryPassword}
+          <p>You requested to reset your password. Use the 4-digit verification code below to proceed:</p>
+          <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; font-size: 32px; font-weight: bold; letter-spacing: 5px; display: inline-block; color: #111827; margin: 15px 0;">
+            ${verificationCode}
           </div>
-          <p style="color: #dc2626; font-weight: 500;">Safety warning: For security compliance, please replace this temporary value with a robust credential right after logging in.</p>
+          <p>This code is valid for 15 minutes. If you did not request this, please ignore this email.</p>
         </div>
       `,
     })
 
     return Response.json({
       success: true,
-      message:
-        "A new temporary password has been successfully dispatched to your inbox.",
+      message: "A 4-digit verification code has been dispatched to your inbox.",
     })
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 })

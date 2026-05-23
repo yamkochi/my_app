@@ -1,21 +1,9 @@
-import mysql from "mysql2/promise"
+import { pool } from "@/lib/db" // 1. Imported your existing pool instance
 
 async function getEmployees() {
   try {
-    // 1. Create the connection configuration
-    const connection = await mysql.createConnection({
-      host: process.env.MYSQL_HOST,
-      user: process.env.MYSQL_USER,
-      password: process.env.MYSQL_PASSWORD,
-      database: process.env.MYSQL_DATABASE,
-      port: parseInt(process.env.MYSQL_PORT),
-    })
-
-    // 2. Fetch the first 10 rows from the employee table
-    const [rows] = await connection.execute("SELECT * FROM employee LIMIT 10")
-
-    // 3. Close the connection
-    await connection.end()
+    // 2. Querying directly from the pool instance (No manual creation/destruction required)
+    const [rows] = await pool.execute("SELECT * FROM employee LIMIT 10")
 
     return { success: true, data: rows }
   } catch (error) {
@@ -79,7 +67,12 @@ export default async function EmpPage() {
           {result.data.map((emp, index) => (
             <tr key={index}>
               {columns.map((col) => (
-                <td key={col}>{String(emp[col] ?? "NULL")}</td>
+                <td key={col}>
+                  {/* Safely convert any binary buffer data (like your admin column) to string */}
+                  {Buffer.isBuffer(emp[col])
+                    ? String(emp[col].readInt8(0))
+                    : String(emp[col] ?? "NULL")}
+                </td>
               ))}
             </tr>
           ))}

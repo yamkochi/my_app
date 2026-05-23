@@ -12,7 +12,7 @@ export default function ViewEmployee({ params: paramsPromise }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/employees/${id}`)
+    fetch(`/api/employees/${id}`)
       .then((res) => res.json())
       .then((data) => {
         if (data.error) {
@@ -40,7 +40,7 @@ export default function ViewEmployee({ params: paramsPromise }) {
     if (!confirmed) return
 
     try {
-      const res = await fetch(`${process.env.API_URL}/api/employees/${id}`, {
+      const res = await fetch(`/api/employees/${id}`, {
         method: "DELETE",
       })
       if (res.ok) {

@@ -16,7 +16,7 @@ export default function NewEmployeeForm() {
     vip: false,
     admin: false,
     lat: "",
-    lng: "",
+    lan: "",
     logtime: "",
   })
   //"http://localhost:3000/api/roles
@@ -184,7 +184,7 @@ export default function NewEmployeeForm() {
             <input
               type="number"
               step="any"
-              name="lng"
+              name="lan"
               onChange={handleChange}
               className="mt-1 block w-full p-2 border rounded border-gray-300"
             />

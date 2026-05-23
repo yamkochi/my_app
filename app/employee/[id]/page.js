@@ -1,322 +1,480 @@
 "use client"
+
 import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
+import dynamic from "next/dynamic"
 
-export default function EditEmployee({ params: paramsPromise }) {
-  const params = use(paramsPromise)
+// Dynamically import the map to completely disable Next.js SSR crashes
+const EmployeeMap = dynamic(() => import("@/app/components/EmployeeMap"), {
+  ssr: false,
+  loading: () => (
+    <div
+      style={{
+        height: "250px",
+        background: "#f3f4f6",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        border: "1px solid #ccc",
+        borderRadius: "6px",
+      }}
+    >
+      Loading Interactive Map Canvas...
+    </div>
+  ),
+})
+
+export default function EditEmployeePage({ params }) {
+  const { id } = use(params)
   const router = useRouter()
-  const { id } = params
 
-  const [roles, setRoles] = useState([])
+  // Form Input States
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
+  const [roleId, setRoleId] = useState("")
+  const [roleDesc, setRoleDesc] = useState("")
+  const [dateJoined, setDateJoined] = useState("")
+  const [password, setPassword] = useState("")
+  const [vip, setVip] = useState(false)
+  const [admin, setAdmin] = useState(false)
+  const [lat, setLat] = useState("")
+  const [lan, setLan] = useState("")
+  const [photoFile, setPhotoFile] = useState(null)
+
+  const [rolesList, setRolesList] = useState([])
   const [loading, setLoading] = useState(true)
-  const [preview, setPreview] = useState(null)
-  const [formData, setFormData] = useState({
-    name: "",
-    role_id: "",
-    email: "",
-    role_desc: "",
-    date_joined: "",
-    password: "",
-    vip: false,
-    admin: false,
-    lat: "",
-    lng: "",
-    logtime: "",
-  })
+  const [distanceFromHq, setDistanceFromHq] = useState(null)
 
   useEffect(() => {
+    if (!id) return
+
     fetch(`/api/employees/${id}`)
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`Server status: ${res.status}`)
+        return res.json()
+      })
       .then((data) => {
         if (data.error) {
           alert(data.error)
-          router.push("/employee")
           return
         }
 
-        setRoles(data.roles)
-
-        // Format ISO timestamp dates safely into input value patterns (YYYY-MM-DD)
-        const formattedDate = data.employee.date_joined
-          ? data.employee.date_joined.split("T")[0]
-          : ""
-        const formattedLogtime = data.employee.logtime
-          ? data.employee.logtime.slice(0, 16)
-          : ""
-
-        setFormData({
-          ...data.employee,
-          date_joined: formattedDate,
-          logtime: formattedLogtime,
-          password: "", // Keep empty unless updating
-        })
-
-        if (data.employee.photo_url) {
-          setPreview(data.employee.photo_url)
+        if (data.employee) {
+          const emp = data.employee
+          setDistanceFromHq(emp.distance_from_hq) // Map the new distance metric
+          setName(emp.name || "")
+          setEmail(emp.email || "")
+          setRoleId(emp.role_id || "")
+          setRoleDesc(emp.role_desc || "")
+          if (emp.date_joined) setDateJoined(emp.date_joined.substring(0, 10))
+          setVip(emp.vip === 1 || emp.vip === true)
+          setAdmin(emp.admin === 1 || emp.admin === true)
+          setLat(emp.lat || "")
+          setLan(emp.lan || "")
         }
-        setLoading(false)
+        if (data.roles) setRolesList(data.roles)
       })
-      .catch((err) => console.error("Error fetching record:", err))
-  }, [id, router])
+      .catch((err) => {
+        alert(`Failed to load employee details: ${err.message}`)
+      })
+      .finally(() => setLoading(false))
+  }, [id])
 
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+  const handleLocationPin = (selectedLat, selectedLan) => {
+    setLat(selectedLat)
+    setLan(selectedLan)
   }
 
-  const handleToggle = (field) => {
-    setFormData((prev) => ({ ...prev, [field]: !prev[field] }))
-  }
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      setFormData((prev) => ({ ...prev, photo: file }))
-      setPreview(URL.createObjectURL(file))
-    }
-  }
-
-  const handleSubmit = async (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault()
-    const data = new FormData()
-    Object.keys(formData).forEach((key) => {
-      if (formData[key] !== null && formData[key] !== undefined) {
-        data.append(key, formData[key])
-      }
-    })
+    const formData = new FormData()
+    formData.append("name", name)
+    formData.append("email", email)
+    formData.append("role_id", roleId)
+    formData.append("role_desc", roleDesc)
+    formData.append("date_joined", dateJoined)
+    formData.append("vip", vip ? "true" : "false")
+    formData.append("admin", admin ? "true" : "false")
+    formData.append("lat", lat)
+    formData.append("lan", lan)
 
-    const res = await fetch(`/api/employees/${id}`, {
-      method: "PUT",
-      body: data,
-    })
-    if (res.ok) {
-      router.push("/employee")
-    } else {
-      alert("Failed to update employee record")
+    if (password.trim() !== "") formData.append("password", password)
+    if (photoFile) formData.append("photo", photoFile)
+
+    try {
+      const res = await fetch(`/api/employees/${id}`, {
+        method: "PUT",
+        body: formData,
+      })
+      const data = await res.json()
+
+      if (data.success) {
+        alert("🎉 Employee profile updated successfully!")
+        router.push("/employee")
+        router.refresh()
+      } else {
+        alert(`Failed to save: ${data.error}`)
+      }
+    } catch (err) {
+      alert("An unexpected network error occurred.")
     }
   }
 
   if (loading)
-    return <div className="text-center mt-10">Loading Employee Data...</div>
+    return (
+      <div style={{ padding: "20px", fontFamily: "sans-serif" }}>
+        Loading profile records framework...
+      </div>
+    )
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white shadow-md rounded-lg mt-10">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">
-          Edit Employee (ID: {id})
-        </h2>
-        <button
-          type="button"
-          onClick={() => router.push("/employee")}
-          className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition"
-        >
-          Back to Employees
-        </button>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Name
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              required
-              onChange={handleChange}
-              className="mt-1 block w-full p-2 border rounded border-gray-300"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              required
-              onChange={handleChange}
-              className="mt-1 block w-full p-2 border rounded border-gray-300"
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Role
-            </label>
-            <select
-              name="role_id"
-              value={formData.role_id}
-              required
-              onChange={handleChange}
-              className="mt-1 block w-full p-2 border rounded border-gray-300 bg-white"
-            >
-              <option value="">Select Role</option>
-              {roles.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.role_name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Date Joined
-            </label>
-            <input
-              type="date"
-              name="date_joined"
-              value={formData.date_joined}
-              required
-              onChange={handleChange}
-              className="mt-1 block w-full p-2 border rounded border-gray-300"
-            />
-          </div>
-        </div>
-
+    <div
+      style={{
+        maxWidth: "600px",
+        margin: "40px auto",
+        padding: "20px",
+        fontFamily: "sans-serif",
+        border: "1px solid #e5e7eb",
+        borderRadius: "8px",
+        boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+      }}
+    >
+      <h1
+        style={{
+          color: "#4f46e5",
+          borderBottom: "2px solid #e5e7eb",
+          paddingBottom: "10px",
+          marginTop: 0,
+        }}
+      >
+        Edit Employee Profile
+      </h1>
+      <form
+        onSubmit={handleFormSubmit}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "15px",
+          marginTop: "20px",
+        }}
+      >
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Password (Leave blank to keep unchanged)
+          <label
+            style={{
+              display: "block",
+              fontWeight: "bold",
+              marginBottom: "5px",
+            }}
+          >
+            Full Name:
           </label>
           <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            className="mt-1 block w-full p-2 border rounded border-gray-300"
-            placeholder="••••••••"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            style={{
+              width: "100%",
+              padding: "8px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Role Description
+          <label
+            style={{
+              display: "block",
+              fontWeight: "bold",
+              marginBottom: "5px",
+            }}
+          >
+            Email Address:
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={{
+              width: "100%",
+              padding: "8px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          />
+        </div>
+
+        <div>
+          <label
+            style={{
+              display: "block",
+              fontWeight: "bold",
+              marginBottom: "5px",
+            }}
+          >
+            Assigned System Access Role:
+          </label>
+          <select
+            value={roleId}
+            onChange={(e) => setRoleId(e.target.value)}
+            required
+            style={{
+              width: "100%",
+              padding: "8px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          >
+            <option value="">-- Choose Access Group --</option>
+            {rolesList.map((role) => (
+              <option key={role.id} value={role.id}>
+                {role.role_name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label
+            style={{
+              display: "block",
+              fontWeight: "bold",
+              marginBottom: "5px",
+            }}
+          >
+            Role Profile Description:
           </label>
           <textarea
-            name="role_desc"
-            value={formData.role_desc || ""}
-            onChange={handleChange}
-            className="mt-1 block w-full p-2 border rounded border-gray-300"
-            rows="2"
-          ></textarea>
+            value={roleDesc}
+            onChange={(e) => setRoleDesc(e.target.value)}
+            rows="3"
+            style={{
+              width: "100%",
+              padding: "8px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          />
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Latitude
-            </label>
-            <input
-              type="number"
-              step="any"
-              name="lat"
-              value={formData.lat || ""}
-              onChange={handleChange}
-              className="mt-1 block w-full p-2 border rounded border-gray-300"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Longitude
-            </label>
-            <input
-              type="number"
-              step="any"
-              name="lng"
-              value={formData.lng || ""}
-              onChange={handleChange}
-              className="mt-1 block w-full p-2 border rounded border-gray-300"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Log Time
-            </label>
-            <input
-              type="datetime-local"
-              name="logtime"
-              value={formData.logtime || ""}
-              onChange={handleChange}
-              className="mt-1 block w-full p-2 border rounded border-gray-300"
-            />
-          </div>
-        </div>
-
-        {/* Binary Toggles */}
-        <div className="flex space-x-8 py-2">
-          <div className="flex items-center space-x-3">
-            <span className="text-sm font-medium text-gray-700">
-              VIP Status
-            </span>
-            <button
-              type="button"
-              onClick={() => handleToggle("vip")}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.vip ? "bg-indigo-600" : "bg-gray-200"}`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.vip ? "translate-x-6" : "translate-x-1"}`}
-              />
-            </button>
-            <span className="text-sm text-gray-500">
-              {formData.vip ? "Yes" : "No"}
-            </span>
-          </div>
-
-          <div className="flex items-center space-x-3">
-            <span className="text-sm font-medium text-gray-700">
-              Admin Privileges
-            </span>
-            <button
-              type="button"
-              onClick={() => handleToggle("admin")}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.admin ? "bg-indigo-600" : "bg-gray-200"}`}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.admin ? "translate-x-6" : "translate-x-1"}`}
-              />
-            </button>
-            <span className="text-sm text-gray-500">
-              {formData.admin ? "Yes" : "No"}
-            </span>
-          </div>
-        </div>
-
-        {/* Photo Upload with existing file display fallback */}
         <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Update Photo
+          <label
+            style={{
+              display: "block",
+              fontWeight: "bold",
+              marginBottom: "5px",
+            }}
+          >
+            Employment Commencement Date:
           </label>
-          <div className="mt-2 flex items-center space-x-4">
-            <label className="cursor-pointer bg-white px-4 py-2 border border-gray-300 rounded shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50">
-              Change Image
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
+          <input
+            type="date"
+            value={dateJoined}
+            onChange={(e) => setDateJoined(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "8px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          />
+        </div>
+
+        <div>
+          <label
+            style={{
+              display: "block",
+              fontWeight: "bold",
+              marginBottom: "5px",
+            }}
+          >
+            Update Password (Leave blank to keep current):
+          </label>
+          <input
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "8px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          />
+        </div>
+
+        <div>
+          <label
+            style={{
+              display: "block",
+              fontWeight: "bold",
+              marginBottom: "5px",
+            }}
+          >
+            Profile Picture Upload:
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setPhotoFile(e.target.files[0])}
+            style={{ width: "100%", padding: "5px" }}
+          />
+        </div>
+
+        <div style={{ display: "flex", gap: "20px" }}>
+          <label
+            style={{
+              cursor: "pointer",
+              display: "flex",
+              gap: "5px",
+              fontWeight: "bold",
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={vip}
+              onChange={(e) => setVip(e.target.checked)}
+            />{" "}
+            VIP Status
+          </label>
+          <label
+            style={{
+              cursor: "pointer",
+              display: "flex",
+              gap: "5px",
+              fontWeight: "bold",
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={admin}
+              onChange={(e) => setAdmin(e.target.checked)}
+            />{" "}
+            Admin Controls
+          </label>
+        </div>
+
+        {/* INTERACTIVE GEOLOCATION MAP COMPONENT FRAME BLOCK */}
+        <div>
+          <label
+            style={{
+              display: "block",
+              fontWeight: "bold",
+              marginBottom: "5px",
+            }}
+          >
+            Geolocate Field Coordinates (Click map to pin location):
+          </label>
+          <EmployeeMap
+            lat={lat}
+            lan={lan}
+            onLocationSelect={handleLocationPin}
+          />
+          {/* Place this JSX right beneath your <EmployeeMap /> component wrapper */}
+          {distanceFromHq !== null && (
+            <div
+              style={{
+                marginTop: "10px",
+                padding: "10px",
+                backgroundColor: "#eff6ff",
+                borderLeft: "4px solid #3b82f6",
+                borderRadius: "4px",
+                color: "#1e40af",
+                fontSize: "14px",
+              }}
+            >
+              🎯 <strong>HQ Proximity:</strong> This employee is pinned{" "}
+              <strong>{distanceFromHq} km</strong> away from the Head Office.
+            </div>
+          )}
+        </div>
+
+        <div style={{ display: "flex", gap: "15px" }}>
+          <div style={{ flex: 1 }}>
+            <label
+              style={{
+                display: "block",
+                fontWeight: "bold",
+                marginBottom: "5px",
+              }}
+            >
+              Latitude:
             </label>
-            {preview && (
-              <img
-                src={preview}
-                alt="Current Preview"
-                className="h-16 w-16 object-cover rounded-full border"
-              />
-            )}
+            <input
+              type="number"
+              step="any"
+              value={lat}
+              onChange={(e) => setLat(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "8px",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+            />
+          </div>
+          <div style={{ flex: 1 }}>
+            <label
+              style={{
+                display: "block",
+                fontWeight: "bold",
+                marginBottom: "5px",
+              }}
+            >
+              Longitude (lan):
+            </label>
+            <input
+              type="number"
+              step="any"
+              value={lan}
+              onChange={(e) => setLan(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "8px",
+                borderRadius: "4px",
+                border: "1px solid #ccc",
+              }}
+            />
           </div>
         </div>
 
-        <button
-          type="submit"
-          className="w-full py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded shadow transition"
-        >
-          Update Record
-        </button>
+        <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+          <button
+            type="submit"
+            style={{
+              flex: 1,
+              padding: "12px",
+              backgroundColor: "#4f46e5",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              fontSize: "16px",
+              fontWeight: "bold",
+              cursor: "pointer",
+            }}
+          >
+            Save Profile Changes
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push("/employee")}
+            style={{
+              padding: "12px 20px",
+              backgroundColor: "#e5e7eb",
+              color: "#374151",
+              border: "none",
+              borderRadius: "4px",
+              fontSize: "16px",
+              fontWeight: "bold",
+              cursor: "pointer",
+            }}
+          >
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
   )

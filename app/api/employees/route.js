@@ -34,7 +34,7 @@ export async function POST(request) {
     const vip = formData.get("vip") === "true" ? 1 : 0
     const admin = formData.get("admin") === "true" ? 1 : 0
     const lat = formData.get("lat") ? parseFloat(formData.get("lat")) : null
-    const lng = formData.get("lng") ? parseFloat(formData.get("lng")) : null
+    const lan = formData.get("lng") ? parseFloat(formData.get("lan")) : null
     const logtime = formData.get("logtime") || null
     const file = formData.get("photo")
 
@@ -43,7 +43,7 @@ export async function POST(request) {
 
     // Insert initially without photo_url to get the Insert ID
     const [result] = await connection.query(
-      `INSERT INTO employee (name, role_id, email, role_desc, date_joined, password, vip, admin, lat, lng, logtime) 
+      `INSERT INTO employee (name, role_id, email, role_desc, date_joined, password, vip, admin, lat, lan, logtime) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         name,
@@ -55,7 +55,7 @@ export async function POST(request) {
         vip,
         admin,
         lat,
-        lng,
+        lan,
         logtime,
       ],
     )
