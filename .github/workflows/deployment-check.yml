@@ -1,29 +1,16 @@
-name: Production Deployment Diagnostics
-
-on:
-  push:
-    branches: [ main ] # Triggers automatically when you push to main
-  workflow_dispatch: # Allows you to trigger it manually via GitHub UI
-
-jobs:
-  ping-health:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Wait for hosting build completion
-        run: sleep 30 # Gives Hostinger 30 seconds to finish deploying your latest code
-
-      - name: Execute Live Server Diagnostic Test
-        run: |
-          RESPONSE=$(curl -s -w "%{http_code}" -o response.json "https://yamkochi.com{{ secrets.CRON_SECRET }}")
-          HTTP_STATUS="${RESPONSE:${#RESPONSE}-3}"
-          
-          echo "Server Status Code: $HTTP_STATUS"
-          echo "Diagnostics Output:"
-          cat response.json
-          
-          if [ "$HTTP_STATUS" -ne 200 ]; then
-            echo "❌ Infrastructure diagnostic failure or unauthorized access!"
-            exit 1
-          fi
-          echo "✅ Production services are healthy!"
+- name: Run Diagnostics
+  run: |
+    # Capture only the status code into the variable
+    HTTP_STATUS=$(curl -s -w "%{http_code}" -o response.json "https://yamkochi.com${{ secrets.CRON_SECRET }}")
+    
+    echo "Server Status Code: $HTTP_STATUS"
+    echo "Diagnostics Output:"
+    cat response.json
+    
+    # Directly compare the clean 3-digit code
+    if [ "$HTTP_STATUS" -ne 200 ]; then
+      echo "❌ Infrastructure diagnostic failure or unauthorized access!"
+      exit 1
+    fi
+    echo "✅ Production services are healthy!"
 
